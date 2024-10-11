@@ -6,6 +6,7 @@ import React, {
   useImperativeHandle,
   ReactNode,
   Ref,
+  ReactElement,
 } from "react";
 import {
   Dimensions,
@@ -39,7 +40,7 @@ const isViewStyle = (style: ViewProps["style"]): style is ViewStyle => {
   );
 };
 
-export type ScrollPickerProps<ItemT extends string | number> = {
+export type ScrollPickerProps<ItemT extends object> = {
   style?: ViewProps["style"];
   dataSource: Array<ItemT>;
   selectedIndex?: number;
@@ -69,7 +70,8 @@ export type ScrollPickerHandle = {
   scrollToTargetIndex: (val: number) => void;
 }
 
-const ScrollPicker: { <ItemT extends string | number>(props: ScrollPickerProps<ItemT> & { ref?: Ref<ScrollPickerHandle> }): ReactNode } = React.forwardRef((propsState, ref) => {
+// @ts-ignore
+const ScrollPicker: { <ItemT extends object>(props: ScrollPickerProps<ItemT> & { ref?: Ref<ScrollPickerHandle> }): React.JSX.Element } = React.forwardRef((propsState, ref) => {
   const { itemHeight = 30, style, scrollViewComponent, ...props } = propsState;
   const [initialized, setInitialized] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(
@@ -82,11 +84,18 @@ const ScrollPicker: { <ItemT extends string | number>(props: ScrollPickerProps<I
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
 
   useImperativeHandle(ref, () => ({
-    scrollToTargetIndex: (val: number) => {
+      scrollToTargetIndex: (val: number) => {
       setSelectedIndex(val);
       sView?.current?.scrollTo({ y: val * itemHeight });
     },
   }));
+
+  useEffect(() => {
+    if(selectedIndex !== props.selectedIndex && props.selectedIndex != null) {
+      setSelectedIndex(props.selectedIndex);
+        sView?.current?.scrollTo({ y: props.selectedIndex * itemHeight });
+    }
+  }, [props.selectedIndex]);
 
   const wrapperHeight =
     props.wrapperHeight ||
@@ -138,7 +147,7 @@ const ScrollPicker: { <ItemT extends string | number>(props: ScrollPickerProps<I
             : [props.itemTextStyle ? props.itemTextStyle : styles.itemTextStyle]
         }
       >
-        {data}
+        {String(data)}
       </Text>
     );
 
@@ -148,6 +157,7 @@ const ScrollPicker: { <ItemT extends string | number>(props: ScrollPickerProps<I
       </View>
     );
   };
+
   const scrollFix = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       let y = 0;
@@ -232,6 +242,7 @@ const ScrollPicker: { <ItemT extends string | number>(props: ScrollPickerProps<I
     top: (wrapperHeight - itemHeight) / 2,
     height: itemHeight,
     width: highlightWidth,
+    backgroundColor: highlightColor,
     borderTopColor: highlightColor,
     borderBottomColor: highlightColor,
     borderTopWidth: highlightBorderWidth,
