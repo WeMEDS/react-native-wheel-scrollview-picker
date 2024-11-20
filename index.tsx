@@ -55,6 +55,7 @@ export type ScrollPickerProps<ItemT extends object> = {
   ) => JSX.Element;
   highlightColor?: string;
   highlightBorderWidth?: number;
+  scrollDisabled?: boolean;
   itemTextStyle?: object;
   activeItemTextStyle?: object;
   itemHeight?: number;
@@ -259,6 +260,7 @@ const ScrollPicker: { <ItemT extends object>(props: ScrollPickerProps<ItemT> & {
         bounces={false}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
+        scrollEnabled={!props.scrollDisabled}
         onMomentumScrollBegin={(_e: any) => onMomentumScrollBegin()}
         onMomentumScrollEnd={(e: NativeSyntheticEvent<NativeScrollEvent>) =>
           onMomentumScrollEnd(e)
